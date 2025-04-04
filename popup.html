@@ -17,55 +17,104 @@
       .form-group {
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 8px;
+        padding: 12px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
       }
-      input,
-      textarea,
-      button {
+
+      .form-group label {
+        font-weight: 600;
+        color: #2c3e50;
+      }
+
+      .form-group select {
         padding: 8px;
         border-radius: 4px;
+        border: 1px solid #ced4da;
+        background-color: white;
+        font-size: 14px;
       }
-      input,
-      textarea {
-        border: 1px solid #ccc;
+
+      .form-group select:focus {
+        border-color: #4285f4;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
       }
-      button {
-        background-color: #4285f4;
-        color: white;
-        border: none;
-        cursor: pointer;
-        font-weight: bold;
+
+      .model-selection-container {
+        display: flex;
+        gap: 8px;
       }
-      button:hover {
-        background-color: #3367d6;
+
+      #fetchModelsBtn {
+        align-self: flex-end;
+        padding: 8px 12px;
+        background-color: #34a853;
+        font-size: 12px;
       }
-      button:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
+
+      #fetchModelsBtn:hover {
+        background-color: #2d9144;
+      }
+
+      .info-tooltip {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 4px;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .action-buttons button {
+        flex: 1;
       }
       .status {
-        margin-top: 10px;
-        padding: 8px;
+        margin: 8px 0;
+        padding: 10px;
         border-radius: 4px;
+        font-size: 14px;
+        text-align: center;
       }
-      .success {
+
+      .status.info {
+        background-color: #cce5ff;
+        color: #004085;
+      }
+
+      .status.success {
         background-color: #d4edda;
         color: #155724;
       }
-      .error {
+
+      .status.error {
         background-color: #f8d7da;
         color: #721c24;
       }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      #transcript {
+        font-size: 14px;
+        line-height: 1.5;
+        margin-top: 8px;
+      }
+
+      #copyBtn {
+        margin-top: 8px;
+        width: 100%;
+      }
+
       .hidden {
         display: none;
-      }
-      #transcript {
-        max-height: 200px;
-        overflow-y: auto;
-        white-space: pre-wrap;
-        border: 1px solid #ccc;
-        padding: 8px;
-        border-radius: 4px;
       }
     </style>
   </head>
@@ -80,52 +129,33 @@
           id="apiKey"
           placeholder="Enter your Groq API key"
         />
+        <div class="info-tooltip">
+          Your API key is stored locally and never shared
+        </div>
       </div>
 
       <div class="form-group">
-        <label for="apiProvider">API Provider:</label>
-        <select id="apiProvider" class="form-control">
-          <option value="openai">OpenAI</option>
-          <option value="groq">Groq</option>
-          <option value="huggingface">HuggingFace</option>
-          <option value="google">Google</option>
-          <option value="meta">Meta</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="groqModelSelect">Model Selection:</label>
-        <select id="groqModelSelect" class="form-control">
-          <optgroup label="Groq">
-            <option value="mixtral-8x7b-32768">Mixtral 8x7B-32768</option>
-            <option value="llama2-70b-4096">LLaMA2 70B-4096</option>
-          </optgroup>
-          <optgroup label="HuggingFace">
-            <option value="distil-whisper-large-v3-en">
-              Distil Whisper Large V3 (English)
-            </option>
-          </optgroup>
-          <optgroup label="Google">
-            <option value="gemma2-9b-it">Gemma 2 9B</option>
-          </optgroup>
-          <optgroup label="Meta">
+        <label for="modelSelect">Model Selection:</label>
+        <div class="model-selection-container">
+          <select id="modelSelect" class="form-control">
+            <option value="gemma2-9b-it">Gemma2 9b IT 70B (8K)</option>
             <option value="llama-3.3-70b-versatile">
               LLaMA 3.3 70B Versatile (128K)
             </option>
             <option value="llama-3.1-8b-instant">
               LLaMA 3.1 8B Instant (128K)
             </option>
-            <option value="llama-guard-3-8b">LLaMA Guard 3 8B</option>
+            <option value="llama-guard-3-8b">LLaMA Guard 3 (8K)</option>
             <option value="llama3-70b-8192">LLaMA 3 70B (8K)</option>
             <option value="llama3-8b-8192">LLaMA 3 8B (8K)</option>
-          </optgroup>
-          <optgroup label="OpenAI">
-            <option value="whisper-large-v3">Whisper Large V3</option>
-            <option value="whisper-large-v3-turbo">
-              Whisper Large V3 Turbo
-            </option>
-          </optgroup>
-        </select>
+          </select>
+          <button id="fetchModelsBtn" title="Refresh available models">
+            ↻
+          </button>
+        </div>
+        <div class="info-tooltip">
+          Select a model to process your transcript
+        </div>
       </div>
 
       <div class="form-group">
@@ -135,17 +165,24 @@
           rows="3"
           placeholder="E.g., Format as a Q&A dialogue"
         ></textarea>
+        <div class="info-tooltip">
+          Customize how you want the transcript to be formatted
+        </div>
       </div>
 
-      <button id="extractBtn">Extract Transcript</button>
-      <button id="formatBtn" disabled>Format with Groq AI</button>
+      <div class="action-buttons">
+        <button id="extractBtn">Extract Transcript</button>
+        <button id="formatBtn" disabled>Format with Groq AI</button>
+      </div>
 
       <div id="statusMessage" class="status hidden"></div>
 
       <div id="transcriptContainer" class="hidden">
         <h3>Transcript:</h3>
+        <div class="transcript-controls">
+          <button id="copyBtn" class="hidden">Copy to Clipboard</button>
+        </div>
         <div id="transcript"></div>
-        <button id="copyBtn" class="hidden">Copy to Clipboard</button>
       </div>
     </div>
 
