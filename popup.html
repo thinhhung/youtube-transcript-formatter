@@ -74,12 +74,29 @@
       <h2>YouTube Transcript Formatter</h2>
 
       <div class="form-group">
-        <label for="apiKey">OpenAI API Key:</label>
+        <label for="apiKey">Groq API Key:</label>
         <input
           type="password"
           id="apiKey"
-          placeholder="Enter your OpenAI API key"
+          placeholder="Enter your Groq API key"
         />
+      </div>
+
+      <div class="form-group">
+        <label for="modelSelect">Model Selection:</label>
+        <select id="modelSelect" class="form-control">
+          <option value="gemma2-9b-it">Gemma2 9b IT 70B (8K)</option>
+          <option value="llama-3.3-70b-versatile">
+            LLaMA 3.3 70B Versatile (128K)
+          </option>
+          <option value="llama-3.1-8b-instant">
+            LLaMA 3.1 8B Instant (128K)
+          </option>
+          <option value="llama-guard-3-8b">LLaMA Guard 3 (8K)</option>
+          <option value="llama3-70b-8192">LLaMA 3 70B (8K)</option>
+          <option value="llama3-8b-8192">LLaMA 3 8B (8K)</option>
+        </select>
+        <button id="fetchModelsBtn">Fetch Models</button>
       </div>
 
       <div class="form-group">
@@ -92,7 +109,7 @@
       </div>
 
       <button id="extractBtn">Extract Transcript</button>
-      <button id="formatBtn" disabled>Format with ChatGPT</button>
+      <button id="formatBtn" disabled>Format with Groq AI</button>
 
       <div id="statusMessage" class="status hidden"></div>
 

@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   const apiKeyInput = document.getElementById("apiKey");
   const formatInstructionsInput = document.getElementById("formatInstructions");
+  const modelSelect = document.getElementById("modelSelect");
   const extractBtn = document.getElementById("extractBtn");
   const formatBtn = document.getElementById("formatBtn");
   const statusMessage = document.getElementById("statusMessage");
@@ -10,10 +11,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let currentTranscript = "";
 
+  // Fetch available models from Groq API when the popup loads
+  const fetchModelsBtn = document.getElementById("fetchModelsBtn");
+
+  fetchModelsBtn.addEventListener("click", function () {
+    fetchGroqModels().then(() => {
+      // Store models in local storage
+      const models = Array.from(modelSelect.options).map(
+        (option) => option.value
+      );
+      chrome.storage.local.set({ availableModels: models }, function () {
+        console.log("Models stored in local storage:", models);
+      });
+    });
+  });
+
   // Load saved API key if available
-  chrome.storage.local.get(["openaiApiKey"], function (result) {
-    if (result.openaiApiKey) {
-      apiKeyInput.value = result.openaiApiKey;
+  chrome.storage.local.get(["groqApiKey"], function (result) {
+    if (result.groqApiKey) {
+      apiKeyInput.value = result.groqApiKey;
     }
   });
 
@@ -26,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Save API key when changed
   apiKeyInput.addEventListener("change", function () {
-    chrome.storage.local.set({ openaiApiKey: apiKeyInput.value });
+    chrome.storage.local.set({ groqApiKey: apiKeyInput.value });
   });
 
   // Save format instructions when changed
@@ -34,6 +50,119 @@ document.addEventListener("DOMContentLoaded", function () {
     chrome.storage.local.set({
       formatInstructions: formatInstructionsInput.value,
     });
+  });
+
+  // Load saved settings
+  chrome.storage.local.get(
+    ["groqApiKey", "selectedModel", "availableModels"],
+    function (result) {
+      if (result.groqApiKey) {
+        apiKeyInput.value = result.groqApiKey;
+      }
+      if (result.selectedModel) {
+        modelSelect.value = result.selectedModel;
+      }
+      if (result.availableModels && Array.isArray(result.availableModels)) {
+        // Clear existing options
+        while (modelSelect.firstChild) {
+          modelSelect.removeChild(modelSelect.firstChild);
+        }
+
+        // Add models from local storage to the dropdown
+        result.availableModels.forEach((model) => {
+          const option = document.createElement("option");
+          option.value = model;
+          option.textContent = model;
+          modelSelect.appendChild(option);
+        });
+
+        // Restore previously selected model if it exists in the available models
+        if (
+          result.selectedModel &&
+          result.availableModels.includes(result.selectedModel)
+        ) {
+          modelSelect.value = result.selectedModel;
+        }
+      }
+    }
+  );
+
+  // Save model selection when changed
+  modelSelect.addEventListener("change", function () {
+    chrome.storage.local.set({ selectedModel: modelSelect.value });
+  });
+
+  // Function to fetch available models from Groq API
+  async function fetchGroqModels() {
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey) {
+      // If no API key is available, use the default hardcoded models
+      return;
+    }
+
+    try {
+      // Show loading state
+      modelSelect.disabled = true;
+
+      // Fetch models from Groq API
+      const response = await fetch("https://api.groq.com/openai/v1/models", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch models: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Clear existing options
+      while (modelSelect.firstChild) {
+        modelSelect.removeChild(modelSelect.firstChild);
+      }
+
+      // Add models to select dropdown
+      if (data.data && data.data.length > 0) {
+        // Sort models by id
+        data.data.sort((a, b) => a.id.localeCompare(b.id));
+
+        // Add each model as an option
+        data.data.forEach((model) => {
+          const option = document.createElement("option");
+          option.value = model.id;
+          option.textContent = model.id;
+          modelSelect.appendChild(option);
+        });
+
+        // Try to restore previously selected model
+        chrome.storage.local.get(["selectedModel"], function (result) {
+          if (result.selectedModel) {
+            // Check if the previously selected model is still available
+            const options = Array.from(modelSelect.options);
+            const modelExists = options.some(
+              (opt) => opt.value === result.selectedModel
+            );
+
+            if (modelExists) {
+              modelSelect.value = result.selectedModel;
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching Groq models:", error);
+      // If there's an error, we'll keep using the default models
+    } finally {
+      modelSelect.disabled = false;
+    }
+  }
+
+  // Fetch models when API key changes
+  apiKeyInput.addEventListener("change", function () {
+    fetchGroqModels();
   });
 
   // Extract transcript button click handler
@@ -83,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
   formatBtn.addEventListener("click", function () {
     const apiKey = apiKeyInput.value.trim();
     if (!apiKey) {
-      showStatus("Please enter your OpenAI API key", "error");
+      showStatus("Please enter your API key", "error");
       return;
     }
 
@@ -92,7 +221,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    showStatus("Formatting transcript with ChatGPT...", "info");
+    showStatus("Formatting transcript with Groq AI...", "info");
     formatBtn.disabled = true;
 
     const formatInstructions =
@@ -106,6 +235,8 @@ document.addEventListener("DOMContentLoaded", function () {
         transcript: currentTranscript,
         apiKey: apiKey,
         formatInstructions: formatInstructions,
+        apiProvider: "groq", // Always use Groq as the provider
+        model: modelSelect.value, // Keeping parameter name for backward compatibility
       },
       function (response) {
         formatBtn.disabled = false;

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "YouTube Transcript Formatter",
   "version": "1.0",
-  "description": "Extract YouTube transcripts and format them using ChatGPT API",
+  "description": "Extract YouTube transcripts and format them using Groq AI API",
   "permissions": ["activeTab", "storage"],
   "host_permissions": ["https://www.youtube.com/*"],
   "action": {
