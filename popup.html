@@ -83,20 +83,49 @@
       </div>
 
       <div class="form-group">
-        <label for="modelSelect">Model Selection:</label>
-        <select id="modelSelect" class="form-control">
-          <option value="gemma2-9b-it">Gemma2 9b IT 70B (8K)</option>
-          <option value="llama-3.3-70b-versatile">
-            LLaMA 3.3 70B Versatile (128K)
-          </option>
-          <option value="llama-3.1-8b-instant">
-            LLaMA 3.1 8B Instant (128K)
-          </option>
-          <option value="llama-guard-3-8b">LLaMA Guard 3 (8K)</option>
-          <option value="llama3-70b-8192">LLaMA 3 70B (8K)</option>
-          <option value="llama3-8b-8192">LLaMA 3 8B (8K)</option>
+        <label for="apiProvider">API Provider:</label>
+        <select id="apiProvider" class="form-control">
+          <option value="openai">OpenAI</option>
+          <option value="groq">Groq</option>
+          <option value="huggingface">HuggingFace</option>
+          <option value="google">Google</option>
+          <option value="meta">Meta</option>
         </select>
-        <button id="fetchModelsBtn">Fetch Models</button>
+      </div>
+
+      <div class="form-group">
+        <label for="groqModelSelect">Model Selection:</label>
+        <select id="groqModelSelect" class="form-control">
+          <optgroup label="Groq">
+            <option value="mixtral-8x7b-32768">Mixtral 8x7B-32768</option>
+            <option value="llama2-70b-4096">LLaMA2 70B-4096</option>
+          </optgroup>
+          <optgroup label="HuggingFace">
+            <option value="distil-whisper-large-v3-en">
+              Distil Whisper Large V3 (English)
+            </option>
+          </optgroup>
+          <optgroup label="Google">
+            <option value="gemma2-9b-it">Gemma 2 9B</option>
+          </optgroup>
+          <optgroup label="Meta">
+            <option value="llama-3.3-70b-versatile">
+              LLaMA 3.3 70B Versatile (128K)
+            </option>
+            <option value="llama-3.1-8b-instant">
+              LLaMA 3.1 8B Instant (128K)
+            </option>
+            <option value="llama-guard-3-8b">LLaMA Guard 3 8B</option>
+            <option value="llama3-70b-8192">LLaMA 3 70B (8K)</option>
+            <option value="llama3-8b-8192">LLaMA 3 8B (8K)</option>
+          </optgroup>
+          <optgroup label="OpenAI">
+            <option value="whisper-large-v3">Whisper Large V3</option>
+            <option value="whisper-large-v3-turbo">
+              Whisper Large V3 Turbo
+            </option>
+          </optgroup>
+        </select>
       </div>
 
       <div class="form-group">
