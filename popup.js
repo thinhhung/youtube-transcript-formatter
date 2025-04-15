@@ -229,7 +229,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const formatInstructions =
         ELEMENTS.formatInstructions.value.trim() ||
-        "Format this YouTube transcript into a well-structured, readable format. Correct any obvious transcription errors.";
+        "Format this YouTube transcript into a well-structured, readable format. Correct any obvious transcription errors. Return ONLY the formatted text without any introduction or explanation.";
 
       const response = await chrome.runtime.sendMessage({
         action: "formatTranscript",
@@ -237,10 +237,28 @@ document.addEventListener("DOMContentLoaded", function () {
         apiKey: apiKey,
         formatInstructions: formatInstructions,
         model: ELEMENTS.modelSelect.value,
+        systemPrompt:
+          "You are a transcript formatter. Your job is to format and clean up YouTube transcripts. Return ONLY the formatted text without any introduction, explanation, or commentary. Do not include phrases like 'Here's the formatted transcript:' or 'The formatted transcript is as follows:'",
       });
 
       if (response && response.success) {
-        currentTranscript = response.formattedText;
+        // Clean up any potential model introductions
+        let formattedText = response.formattedText;
+
+        // Remove common introductory phrases
+        formattedText = formattedText.replace(
+          /^(here'?s?|the following is|i'?ve formatted|below is|this is) (the|your|a) (formatted|cleaned|corrected|improved) (transcript|text|version)[:.\n]/i,
+          ""
+        );
+        formattedText = formattedText.replace(
+          /^(formatted|cleaned|corrected|improved) (transcript|text|version)[:.\n]/i,
+          ""
+        );
+
+        // Trim any leading whitespace
+        formattedText = formattedText.trim();
+
+        currentTranscript = formattedText;
         ELEMENTS.transcriptDiv.textContent = currentTranscript;
         showStatus("Transcript formatted successfully!", "success");
       } else {
